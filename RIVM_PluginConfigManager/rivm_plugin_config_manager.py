@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
-from PyQt4.QtGui import QAction, QIcon
+from PyQt4.QtGui import QAction, QIcon, QToolBar
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
@@ -67,12 +67,23 @@ class RIVM_PluginConfigManager:
         # Declare instance attributes
         self.actions = []
         self.menu = self.tr(u'&RIVM_PluginConfigManager')
+
         # TODO: We are going to let the user set this up in a future iteration
-        self.toolbar = self.iface.addToolBar(u'RIVM_PluginConfigManager')
-        self.toolbar.setObjectName(u'RIVM_PluginConfigManager')
+        self.toolbar = self.get_rivm_toolbar()
 
         self.settings_url = 'http://repo.svc.cal-net.nl/repo/rivm/qgis/'
         self.nam = NetworkAccessManager()
+
+    # TODO: move this to a commons class/module
+    def get_rivm_toolbar(self):
+        TOOLBAR_TITLE = 'RIVM Cal-Net Toolbar'  # TODO get this from commons and make translatable
+        toolbars = self.iface.mainWindow().findChildren(QToolBar, TOOLBAR_TITLE)
+        if len(toolbars)==0:
+            toolbar = self.iface.addToolBar(TOOLBAR_TITLE)
+            toolbar.setObjectName(TOOLBAR_TITLE)
+        else:
+            toolbar = toolbars[0]
+        return toolbar
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
