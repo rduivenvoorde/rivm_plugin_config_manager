@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="/plugins/RIVM_PluginConfigManager">
+    <file>images/icon.prd.svg</file>
+    <file>images/icon.dev.svg</file>
+    <file>images/icon.acc.svg</file>
+  </qresource>
+</RCC>

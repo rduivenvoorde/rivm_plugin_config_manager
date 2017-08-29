@@ -1,0 +1,15 @@
+*.pyc
+*~
+.idea
+.coverage
+.noseids
+repo/*
+*.pdf
+.~lock.*r
+.buildinfo
+.~lock.*
+# Settings not in git
+*.ini
+
+# Sphinx documentation
+RIVM_PluginConfigManager/help/build
