@@ -42,12 +42,12 @@ SOURCES = \
 PLUGINNAME = RIVM_PluginConfigManager
 
 PY_FILES = \
-	__init__.py \
-	rivm_plugin_config_manager.py rivm_plugin_config_manager_dialog.py
+	*.py
+#	future copied below (around #99)
 
 UI_FILES = rivm_plugin_config_manager_dialog_base.ui
 
-EXTRAS = metadata.txt icon.png
+EXTRAS = metadata.txt
 
 EXTRA_DIRS =
 
@@ -94,7 +94,8 @@ test: compile transcompile
 #	@echo "e.g. source run-env-linux.sh <path to qgis install>; make test"
 #	@echo "----------------------"
 
-deploy: compile doc transcompile
+#deploy: compile doc transcompile
+deploy: compile transcompile
 	@echo
 	@echo "------------------------------------------"
 	@echo "Deploying plugin to your .qgis2 directory."
@@ -108,7 +109,8 @@ deploy: compile doc transcompile
 	cp -vf $(COMPILED_RESOURCE_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vfr i18n $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
-	cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
+	cp -vfr future $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+	#cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
 	# Copy extra directories if any
   # (temporarily removed)
 
@@ -138,8 +140,8 @@ zip: deploy dclean
 	@echo "---------------------------"
 	# The zip target deploys the plugin and creates a zip file with the deployed
 	# content. You can then upload the zip file on http://plugins.qgis.org
-	rm -f $(PLUGINNAME).zip
-	cd $(HOME)/$(QGISDIR)/python/plugins; zip -9r $(CURDIR)/$(PLUGINNAME).zip $(PLUGINNAME)
+	rm -f $(CURDIR)/../repo/$(PLUGINNAME).zip
+	cd $(HOME)/$(QGISDIR)/python/plugins; zip -9r $(CURDIR)/../repo/$(PLUGINNAME).zip $(PLUGINNAME)
 
 package: compile
 	# Create a zip package of the plugin named $(PLUGINNAME).zip.
