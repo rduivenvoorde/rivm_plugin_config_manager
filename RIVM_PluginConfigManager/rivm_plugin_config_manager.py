@@ -78,7 +78,7 @@ class RIVM_PluginConfigManager:
     def get_rivm_toolbar(self):
         TOOLBAR_TITLE = 'RIVM Cal-Net Toolbar'  # TODO get this from commons and make translatable
         toolbars = self.iface.mainWindow().findChildren(QToolBar, TOOLBAR_TITLE)
-        if len(toolbars)==0:
+        if len(toolbars) == 0:
             toolbar = self.iface.addToolBar(TOOLBAR_TITLE)
             toolbar.setObjectName(TOOLBAR_TITLE)
         else:
@@ -201,7 +201,7 @@ class RIVM_PluginConfigManager:
             self.iface.removePluginWebMenu(
                 self.tr(u'&RIVM_PluginConfigManager'),
                 action)
-            self.iface.removeToolBarIcon(action)
+            self.toolbar.removeAction(action)
         # remove the toolbar
         del self.toolbar
 
