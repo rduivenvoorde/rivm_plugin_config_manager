@@ -60,8 +60,11 @@ class RIVM_PluginConfigManager:
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
 
-        self.MSG_TITLE = self.tr("RIVM Plugin Config Manager")
+        self.MSG_TITLE = self.tr('RIVM Plugin Config Manager')
         self.LAST_ENVIRONMENT_KEY = 'rivm_config/last_environment'
+        self.PRD = 'prd'
+        self.ACC = 'acc'
+        self.DEV = 'dev'
 
 
         # Declare instance attributes
@@ -85,6 +88,10 @@ class RIVM_PluginConfigManager:
             toolbar = toolbars[0]
         return toolbar
 
+    def get_rivm_iconpath(self, environment):
+        icon_path = ':/plugins/RIVM_PluginConfigManager/images/icon.' + environment + '.svg'
+        return icon_path
+
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -99,7 +106,6 @@ class RIVM_PluginConfigManager:
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('RIVM_PluginConfigManager', message)
-
 
     def add_action(
         self,
@@ -151,11 +157,6 @@ class RIVM_PluginConfigManager:
         :rtype: QAction
         """
 
-        # Create the dialog (after translation) and keep reference
-        self.dlg = RIVM_PluginConfigManagerDialog()
-
-
-
         icon = QIcon(icon_path)
         action = QAction(icon, text, parent)
         action.triggered.connect(callback)
@@ -182,18 +183,27 @@ class RIVM_PluginConfigManager:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/RIVM_PluginConfigManager/images/icon.prd.svg'
+        # Create the dialog (after translation) and keep reference
+        self.dlg = RIVM_PluginConfigManagerDialog()
+        # create the environments dropdown
+        self.dlg.cb_environment.addItem(self.tr('Production'), self.PRD)
+        self.dlg.cb_environment.addItem(self.tr('Acceptance'), self.ACC)
+        self.dlg.cb_environment.addItem(self.tr('Development'), self.DEV)
+
+        # set dialog environment dropdown to show the last selected environment as current
+        environment = QSettings().value(self.LAST_ENVIRONMENT_KEY)
+        index = self.dlg.cb_environment.findData(environment)
+        if index < 0:
+            index = 0
+            environment = self.PRD
+        self.dlg.cb_environment.setCurrentIndex(index)
+
+        icon_path = self.get_rivm_iconpath(environment)
         self.action = self.add_action(
             icon_path,
             text=self.tr(u'Manage RIVM plugin configurations'),
             callback=self.run,
             parent=self.iface.mainWindow())
-
-        # create the environments dropdown
-        self.dlg.cb_environment.addItem(self.tr('Production'), 'prd')
-        self.dlg.cb_environment.addItem(self.tr('Acceptance'), 'acc')
-        self.dlg.cb_environment.addItem(self.tr('Development'), 'dev')
-
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -205,15 +215,8 @@ class RIVM_PluginConfigManager:
         # remove the toolbar
         del self.toolbar
 
-
     def run(self):
         """Run method that performs all the real work"""
-        # show the dialog, showing the last selected environment as current
-        qgis_settings = QSettings()
-        index = self.dlg.cb_environment.findData(qgis_settings.value(self.LAST_ENVIRONMENT_KEY))
-        if index < 0:
-            index = 0
-        self.dlg.cb_environment.setCurrentIndex(index)
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
@@ -223,7 +226,7 @@ class RIVM_PluginConfigManager:
             try:
                 index = self.dlg.cb_environment.currentIndex()
                 environment = self.dlg.cb_environment.itemData(index)
-                icon_path = ':/plugins/RIVM_PluginConfigManager/images/icon.' + environment + '.svg'
+                icon_path = self.get_rivm_iconpath(environment)
                 self.action.setIcon(QIcon(icon_path))
                 url = self.settings_url + environment + '.rivm.ini'
                 (response, content) = self.nam.request(url)
@@ -240,6 +243,7 @@ class RIVM_PluginConfigManager:
                 # create a QSettings object from it
                 settings = QSettings(filename, QSettings.IniFormat)
                 # merge that object into qgis user settings
+                qgis_settings = QSettings()
                 qgis_settings.setValue(self.LAST_ENVIRONMENT_KEY, environment)
                 for key in settings.allKeys():
                     self.info('Setting: {} -> {}'.format(key, settings.value(key)))
