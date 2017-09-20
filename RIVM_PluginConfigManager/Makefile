@@ -28,7 +28,7 @@
 # LOCALES = af
 LOCALES = af
 
-VERSION = 0.2.0
+VERSION = 0.3.0
 
 # If locales are enabled, set the name of the lrelease binary on your system. If
 # you have trouble compiling the translations, you may have to specify the full path to
@@ -45,7 +45,6 @@ PLUGINNAME = RIVM_PluginConfigManager
 
 PY_FILES = \
 	*.py
-#	future copied below (around #99)
 
 UI_FILES = rivm_plugin_config_manager_dialog_base.ui
 
@@ -111,7 +110,6 @@ deploy: compile transcompile
 	cp -vf $(COMPILED_RESOURCE_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vfr i18n $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
-	cp -vfr future $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	#cp -vfr $(HELP) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)/help
 	# Copy extra directories if any
   # (temporarily removed)
@@ -135,14 +133,14 @@ derase:
 	@echo "-------------------------"
 	rm -Rf $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 
-zip: deploy dclean
+zip: derase deploy dclean
 	@echo
 	@echo "---------------------------"
 	@echo "Creating plugin zip bundle."
 	@echo "---------------------------"
 	# The zip target deploys the plugin and creates a zip file with the deployed
 	# content. You can then upload the zip file on http://plugins.qgis.org
-	rm -f $(CURDIR)/../repo/$(PLUGINNAME).zip
+	rm -f $(CURDIR)/../repo/$(PLUGINNAME).$(VERSION).zip
 	cd $(HOME)/$(QGISDIR)/python/plugins; zip -9r $(CURDIR)/../repo/$(PLUGINNAME).$(VERSION).zip $(PLUGINNAME)
 
 package: compile

@@ -18,36 +18,24 @@
 *                                                                         *
 ***************************************************************************
 """
-# from future import standard_library
-# standard_library.install_aliases()
-# from builtins import str
-# from builtins import object
-#
-# __author__ = 'Alessandro Pasotti'
-# __date__ = 'August 2016'
-#
-# import re
-# import urllib.request, urllib.error, urllib.parse
-#
-# from qgis.PyQt.QtCore import pyqtSlot, QUrl, QEventLoop, QTimer, QCoreApplication
-# from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
-#
-# from qgis.core import QgsNetworkAccessManager, QgsAuthManager, QgsMessageLog
-#
-# # FIXME: ignored
-# DEFAULT_MAX_REDIRECTS = 4
-
-
-# TODO: while at RIVM we do not have a recent QGIS which has the future module, we do it ourself:
-import sys
-import os
-sys.path.append(os.path.dirname(__file__))
-
 from future import standard_library
 standard_library.install_aliases()
+from builtins import str
+from builtins import object
 
-#from builtins import str
-#from builtins import object
+__author__ = 'Alessandro Pasotti'
+__date__ = 'August 2016'
+
+import re
+import urllib.request, urllib.error, urllib.parse
+
+from qgis.PyQt.QtCore import pyqtSlot, QUrl, QEventLoop, QTimer, QCoreApplication
+from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
+
+from qgis.core import QgsNetworkAccessManager, QgsAuthManager, QgsMessageLog
+
+# # FIXME: ignored
+# DEFAULT_MAX_REDIRECTS = 4
 
 __author__ = 'Alessandro Pasotti'
 __date__ = 'August 2016'

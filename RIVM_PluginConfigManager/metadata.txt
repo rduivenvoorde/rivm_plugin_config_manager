@@ -8,9 +8,9 @@
 
 [general]
 name=RIVM_PluginConfigManager
-qgisMinimumVersion=2.0
+qgisMinimumVersion=2.18
 description=Plugin to manage the different dev/acc/prd configuration profiles of different RIVM plugins
-version=0.2.0
+version=0.3.0
 author=RIVM
 email=marnix.de.ridder@rivm.nl
 
@@ -24,6 +24,8 @@ repository=http://github.com
 
 # Uncomment the following line and add your changelog:
 changelog=
+    0.3.0
+    * removing future module (now that we have QGIS 2.18.13)
     0.2.0
     * adding future module into package (to handle QGIS 2.14.1)
     0.1.0
