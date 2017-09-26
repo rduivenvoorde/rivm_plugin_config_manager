@@ -184,7 +184,7 @@ class RIVM_PluginConfigManager:
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
         # Create the dialog (after translation) and keep reference
-        self.dlg = RIVM_PluginConfigManagerDialog()
+        self.dlg = RIVM_PluginConfigManagerDialog(self.iface.mainWindow())
         # create the environments dropdown
         self.dlg.cb_environment.addItem(self.tr('Production'), self.PRD)
         self.dlg.cb_environment.addItem(self.tr('Acceptance'), self.ACC)
