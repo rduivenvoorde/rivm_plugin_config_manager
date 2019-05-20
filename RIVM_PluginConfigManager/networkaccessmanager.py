@@ -18,33 +18,15 @@
 *                                                                         *
 ***************************************************************************
 """
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from builtins import object
 
 __author__ = 'Alessandro Pasotti'
 __date__ = 'August 2016'
 
 import re
-import urllib.request, urllib.error, urllib.parse
+import urllib
 
-from qgis.PyQt.QtCore import pyqtSlot, QUrl, QEventLoop, QTimer, QCoreApplication
+from qgis.PyQt.QtCore import QUrl, QEventLoop
 from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
-
-from qgis.core import QgsNetworkAccessManager, QgsAuthManager, QgsMessageLog
-
-# # FIXME: ignored
-# DEFAULT_MAX_REDIRECTS = 4
-
-__author__ = 'Alessandro Pasotti'
-__date__ = 'August 2016'
-
-import re
-import urllib.request, urllib.error, urllib.parse
-
-from PyQt4.QtCore import pyqtSlot, QUrl, QEventLoop, QTimer, QCoreApplication
-from PyQt4.QtNetwork import QNetworkRequest, QNetworkReply
 
 from qgis.core import QgsNetworkAccessManager, QgsAuthManager, QgsMessageLog
 
@@ -104,43 +86,37 @@ class NetworkAccessManager(object):
     """
     This class mimicks httplib2 by using QgsNetworkAccessManager for all
     network calls.
-
     The return value is a tuple of (response, content), the first being and
     instance of the Response class, the second being a string that contains
     the response entity body.
-
     Parameters
     ----------
     debug : bool
         verbose logging if True
     exception_class : Exception
         Custom exception class
-
     Usage 1 (blocking mode)
     -----
     ::
         nam = NetworkAccessManager(authcgf)
         try:
             (response, content) = nam.request('http://www.example.com')
-        except RequestsException, e:
+        except RequestsException as e:
             # Handle exception
             pass
-
     Usage 2 (Non blocking mode)
     -------------------------
     ::
         NOTE! if blocking mode returns immediatly
               it's up to the caller to manage listeners in case
               of non blocking mode
-
         nam = NetworkAccessManager(authcgf)
         try:
             nam.request('http://www.example.com', blocking=False)
             nam.reply.finished.connect(a_signal_listener)
-        except RequestsException, e:
+        except RequestsException as e:
             # Handle exception
             pass
-
         Get response using method:
         nam.httpResult() that return a dictionary with keys:
             'status' - http code result come from reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
@@ -153,7 +129,7 @@ class NetworkAccessManager(object):
             'exception' - the exception returne dduring execution
     """
 
-    def __init__(self, authid=None, disable_ssl_certificate_validation=False, exception_class=None, debug=True):
+    def __init__(self, authid=None, disable_ssl_certificate_validation=False, exception_class=None, debug=False):
         self.disable_ssl_certificate_validation = disable_ssl_certificate_validation
         self.authid = authid
         self.reply = None
@@ -222,7 +198,7 @@ class NetworkAccessManager(object):
         for k, v in list(headers.items()):
             self.msg_log("%s: %s" % (k, v))
         if method.lower() in ['post', 'put']:
-            if isinstance(body, file):
+            if isinstance(body, 'file'):  # ?? was file as name... ??
                 body = body.read()
             self.reply = func(req, body)
         else:
@@ -266,20 +242,20 @@ class NetworkAccessManager(object):
 
         return (self.http_call_result, self.http_call_result.content)
 
-    @pyqtSlot()
+    #@pyqtSlot()
     def downloadProgress(self, bytesReceived, bytesTotal):
         """Keep track of the download progress"""
         #self.msg_log("downloadProgress %s of %s ..." % (bytesReceived, bytesTotal))
         pass
 
-    @pyqtSlot()
-    def requestTimedOut(self, reply):
+    #@pyqtSlot(QNetworkReply)
+    def requestTimedOut(self, QNetworkReply):
         """Trap the timeout. In Async mode requestTimedOut is called after replyFinished"""
-        # adapt http_call_result basing on receiving qgs timer timout signal 
+        # adapt http_call_result basing on receiving qgs timer timout signal
         self.exception_class = RequestsExceptionTimeout
         self.http_call_result.exception = RequestsExceptionTimeout("Timeout error")
 
-    @pyqtSlot()
+    #@pyqtSlot(QObject)
     def replyFinished(self):
         err = self.reply.error()
         httpStatus = self.reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
@@ -296,7 +272,7 @@ class NetworkAccessManager(object):
             # check if errorString is empty, if so, then set err string as
             # reply dump
             if re.match('(.)*server replied: $', self.reply.errorString()):
-                errString = self.reply.errorString() + self.http_call_result.content
+                errString = self.reply.errorString() + str(self.http_call_result.content)
             else:
                 errString = self.reply.errorString()
             # check if self.http_call_result.status_code is available (client abort
@@ -328,7 +304,7 @@ class NetworkAccessManager(object):
                 self.http_call_result.exception = RequestsException(msg)
 
             # overload exception to the custom exception if available
-            if self.exception_class:
+            if self.exception_class is not None:
                 self.http_call_result.exception = self.exception_class(msg)
 
         else:
@@ -382,7 +358,7 @@ class NetworkAccessManager(object):
         else:
             self.msg_log("Reply was already deleted ...")
 
-    @pyqtSlot()
+    #@pyqtSlot()
     def sslErrors(self, ssl_errors):
         """
         Handle SSL errors, logging them if debug is on and ignoring them
@@ -394,7 +370,7 @@ class NetworkAccessManager(object):
         if self.disable_ssl_certificate_validation:
             self.reply.ignoreSslErrors()
 
-    @pyqtSlot()
+    #@pyqtSlot()
     def abort(self):
         """
         Handle request to cancel HTTP call

@@ -8,9 +8,9 @@
 
 [general]
 name=RIVM_PluginConfigManager
-qgisMinimumVersion=2.18
+qgisMinimumVersion=3.4
 description=Plugin to manage the different dev/acc/prd configuration profiles of different RIVM plugins
-version=0.4.0
+version=3.0.0
 author=RIVM
 email=marnix.de.ridder@rivm.nl
 
@@ -24,6 +24,8 @@ repository=http://github.com
 
 # Uncomment the following line and add your changelog:
 changelog=
+    1.0.0
+    * QGIS3 make compatible
     0.4.0
     * make dialog modal
     0.3.0

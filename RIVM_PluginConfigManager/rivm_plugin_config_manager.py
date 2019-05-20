@@ -20,14 +20,17 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
-from PyQt4.QtGui import QAction, QIcon, QToolBar
+from qgis.PyQt.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QAction, QToolBar
+
 # Initialize Qt resources from file resources.py
-import resources
+from . import resources
 # Import the code for the dialog
-from qgis.core import QgsMessageLog
-from rivm_plugin_config_manager_dialog import RIVM_PluginConfigManagerDialog
-from networkaccessmanager import NetworkAccessManager, RequestsException
+from qgis.core import QgsMessageLog, Qgis
+
+from .rivm_plugin_config_manager_dialog import RIVM_PluginConfigManagerDialog
+from .networkaccessmanager import NetworkAccessManager, RequestsException
 import os.path
 
 
@@ -249,9 +252,9 @@ class RIVM_PluginConfigManager:
                     self.info('Setting: {} -> {}'.format(key, settings.value(key)))
                     qgis_settings.setValue(key, settings.value(key))
 
-            except RequestsException, e:
-                # Handle exception
+            except RequestsException as e:
+                # "Handle" exception
                 self.info("Exception in retrieving rivm.ini {}".format(e.message))
 
     def info(self, msg=""):
-        QgsMessageLog.logMessage(str(msg), self.MSG_TITLE, QgsMessageLog.INFO)
+        QgsMessageLog.logMessage('{}'.format(msg), 'PDOK-services Plugin', Qgis.Info)
