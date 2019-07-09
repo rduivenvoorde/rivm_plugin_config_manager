@@ -27,7 +27,7 @@ from qgis.PyQt.QtWidgets import QAction, QToolBar
 # Initialize Qt resources from file resources.py
 from . import resources
 # Import the code for the dialog
-from qgis.core import QgsMessageLog, Qgis
+from qgis.core import QgsApplication, QgsMessageLog, Qgis
 
 from .rivm_plugin_config_manager_dialog import RIVM_PluginConfigManagerDialog
 from .networkaccessmanager import NetworkAccessManager, RequestsException
@@ -50,18 +50,18 @@ class RIVM_PluginConfigManager:
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
-        locale_path = os.path.join(
-            self.plugin_dir,
-            'i18n',
-            'RIVM_PluginConfigManager_{}.qm'.format(locale))
+        locale = QgsApplication.instance().locale()
+        if locale and len(locale) >= 2:
+            locale_path = os.path.join(
+                self.plugin_dir,
+                'i18n',
+                '{}.qm'.format(locale))
 
-        if os.path.exists(locale_path):
-            self.translator = QTranslator()
-            self.translator.load(locale_path)
-
-            if qVersion() > '4.3.3':
-                QCoreApplication.installTranslator(self.translator)
+            if os.path.exists(locale_path):
+                self.translator = QTranslator()
+                self.translator.load(locale_path)
+                if qVersion() > '4.3.3':
+                    QCoreApplication.installTranslator(self.translator)
 
         self.MSG_TITLE = self.tr('RIVM Plugin Config Manager')
         self.LAST_ENVIRONMENT_KEY = 'rivm_config/last_environment'
