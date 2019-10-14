@@ -32,10 +32,28 @@ from qgis.core import QgsApplication, QgsMessageLog, Qgis
 from .rivm_plugin_config_manager_dialog import RIVM_PluginConfigManagerDialog
 from .networkaccessmanager import NetworkAccessManager, RequestsException
 import os.path
+import time
 
 
 class RIVM_PluginConfigManager:
-    """QGIS Plugin Implementation."""
+    """Plugin to be able to easily switch between dev/acc/prd environments
+    at RIVM.
+
+    The dialog shows an 'environment' dropdown, which the user chooses an
+    environment in.
+    Upon OK of the dialog, the plugin:
+    - retrieves a fresh ini file for the chosen environment from the
+    settings repo:
+      http://repo.svc.cal-net.nl/repo/rivm/qgis/
+    - Then writes this ini file to disk (temporarily) to be able to move it
+    from disk to the actual QSettings.
+
+    Plugins using the setting should al all times retrieve the setting from
+    QSettings fresh upon every action/run.
+    In this way a user can switch between environments in one session.
+
+
+    """
 
     def __init__(self, iface):
         """Constructor.
@@ -231,18 +249,22 @@ class RIVM_PluginConfigManager:
                 environment = self.dlg.cb_environment.itemData(index)
                 icon_path = self.get_rivm_iconpath(environment)
                 self.action.setIcon(QIcon(icon_path))
-                url = self.settings_url + environment + '.rivm.ini'
+                # creating ini file url, adding ?t=timestap to fool caches...
+                url = self.settings_url + environment + '.rivm.ini' + '?t={}'.format(time.time())
+                self.info(self.tr('Start retrieving ini file for environment "{}" from "{}"  ').format(environment, url))
                 (response, content) = self.nam.request(url)
                 if response.status != 200:
                     # TODO: what? Take offline ini file?
-                    self.info(self.tr("Error retrieving config, response: " + str(response.status)))
+                    self.info(self.tr("Error retrieving fresh config from repo, status: " + str(response.status)))
                     return
-                self.info(response.content)
+                self.info(self.tr("Succesfully retrieved fresh config from repo, status: " + str(response.status)))
+                #self.info(self.tr("Response: " + str(response.content)))
                 # write ini file to settings.ini
                 filename = os.path.join(os.path.dirname(__file__), "settings.ini")
                 #self.info(filename)
                 with open(filename, 'wb') as f:  # using 'with open', then file is explicitly closed
                     f.write(response.content)
+                self.info(self.tr("Written settings to file (to be able to write to QSettings) : " + filename))
                 # create a QSettings object from it
                 settings = QSettings(filename, QSettings.IniFormat)
                 # merge that object into qgis user settings
@@ -251,10 +273,11 @@ class RIVM_PluginConfigManager:
                 for key in settings.allKeys():
                     self.info('Setting: {} -> {}'.format(key, settings.value(key)))
                     qgis_settings.setValue(key, settings.value(key))
+                self.info(self.tr("Succesfully updated settings!!"))
 
-            except RequestsException as e:
+            except Exception as e:
                 # "Handle" exception
-                self.info("Exception in retrieving rivm.ini {}".format(e.message))
+                self.info("Exception in retrieving rivm.ini, or moving it to QSettings: {}".format(e.message))
 
     def info(self, msg=""):
-        QgsMessageLog.logMessage('{}'.format(msg), 'PDOK-services Plugin', Qgis.Info)
+        QgsMessageLog.logMessage('{}'.format(msg), 'RIVM Config manager', Qgis.Info)

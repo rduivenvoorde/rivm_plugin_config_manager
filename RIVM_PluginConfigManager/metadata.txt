@@ -10,7 +10,7 @@
 name=RIVM_PluginConfigManager
 qgisMinimumVersion=3.4
 description=Plugin to manage the different dev/acc/prd configuration profiles of different RIVM plugins
-version=1.0.1
+version=1.0.2
 author=RIVM
 email=marnix.de.ridder@rivm.nl
 
@@ -24,6 +24,8 @@ repository=http://github.com
 
 # Uncomment the following line and add your changelog:
 changelog=
+    1.0.2
+    * More debug info and fix name of MessageLog tab
     1.0.1
     * Fix locale loading issue
     1.0.0
