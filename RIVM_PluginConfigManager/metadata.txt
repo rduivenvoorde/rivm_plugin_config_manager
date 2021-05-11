@@ -10,7 +10,7 @@
 name=RIVM_PluginConfigManager
 qgisMinimumVersion=3.4
 description=Plugin to manage the different dev/acc/prd configuration profiles of different RIVM plugins
-version=1.0.3
+version=1.0.4
 author=RIVM
 email=marnix.de.ridder@rivm.nl
 
@@ -24,22 +24,15 @@ repository=http://github.com
 
 # Uncomment the following line and add your changelog:
 changelog=
-    1.0.3
-    * Make default page-size for WFS 25000
-    1.0.2
-    * More debug info and fix name of MessageLog tab
-    1.0.1
-    * Fix locale loading issue
-    1.0.0
-    * QGIS3 make compatible
-    0.4.0
-    * make dialog modal
-    0.3.0
-    * removing future module (now that we have QGIS 2.18.13)
-    0.2.0
-    * adding future module into package (to handle QGIS 2.14.1)
-    0.1.0
-    * inital release
+    1.0.4 New KNMI rain services url
+    1.0.3 Make default page-size for WFS 25000
+    1.0.2 More debug info and fix name of MessageLog tab
+    1.0.1 Fix locale loading issue
+    1.0.0 QGIS3 make compatible
+    0.4.0 make dialog modal
+    0.3.0 removing future module (now that we have QGIS 2.18.13)
+    0.2.0 adding future module into package (to handle QGIS 2.14.1)
+    0.1.0 inital release
 
 # Tags are comma separated with spaces allowed
 tags=webservice

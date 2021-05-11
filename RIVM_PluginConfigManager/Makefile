@@ -26,7 +26,6 @@
 #Add iso code for any locales you want to support here (space separated)
 # default is no locales
 # LOCALES = af
-LOCALES = af
 
 VERSION=$(shell cat metadata.txt | grep version= | sed -e 's,version=,,')
 
@@ -142,6 +141,7 @@ zip: derase deploy dclean
 	# content. You can then upload the zip file on http://plugins.qgis.org
 	rm -f $(CURDIR)/../repo/$(PLUGINNAME).$(VERSION).zip
 	cd $(HOME)/$(QGISDIR)/python/plugins; zip -9r $(CURDIR)/../repo/$(PLUGINNAME).$(VERSION).zip $(PLUGINNAME)
+	@echo Successfully created zip: $(CURDIR)/../repo/$(PLUGINNAME).$(VERSION).zip
 
 package: compile
 	# Create a zip package of the plugin named $(PLUGINNAME).zip.
