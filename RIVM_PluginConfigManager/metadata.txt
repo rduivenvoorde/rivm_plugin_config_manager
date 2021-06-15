@@ -18,7 +18,7 @@ repository=http://github.com
 
 # Uncomment the following line and add your changelog:
 changelog=
-    1.0.5 Better handling connection issues, move to plugins menu (from web)
+    1.0.5 Better handling connection issues, move to plugins menu (from web), Refresh settings on every startup
     1.0.4 New KNMI rain services url
     1.0.3 Make default page-size for WFS 25000
     1.0.2 More debug info and fix name of MessageLog tab

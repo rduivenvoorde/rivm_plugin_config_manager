@@ -30,7 +30,6 @@ It is created in the plugin.py and logs to the QgsMessageLog under the
 given LOGGER_NAME tab
 """
 LOGGER_NAME = 'RIVM Config manager'
-
 from . import LOGGER_NAME
 
 from qgis.core import (

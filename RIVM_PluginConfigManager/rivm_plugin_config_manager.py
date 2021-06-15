@@ -20,10 +20,6 @@
  *                                                                         *
  ***************************************************************************/
 """
-import logging
-from . import LOGGER_NAME
-log = logging.getLogger(LOGGER_NAME)
-
 from qgis.PyQt.QtCore import (
     QSettings,
     QTranslator,
@@ -52,6 +48,9 @@ from .networkaccessmanager import NetworkAccessManager
 import os.path
 import time
 
+import logging
+from . import LOGGER_NAME
+log = logging.getLogger(LOGGER_NAME)
 
 
 class RIVM_PluginConfigManager:
@@ -304,7 +303,7 @@ class RIVM_PluginConfigManager:
             for key in settings.allKeys():
                 log.debug(' - {} -> {}'.format(key, settings.value(key)))
                 qgis_settings.setValue(key, settings.value(key))
-            log.debug(self.tr("Succesfully updated settings!!"))
+            log.debug(self.tr(f'Succesfully updated settings!! Using "{environment}"'))
 
         except Exception as e:
             # "Handle" exception
