@@ -20,20 +20,38 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QMenu
-from qgis.PyQt.QtWidgets import QAction, QToolBar
+import logging
+from . import LOGGER_NAME
+log = logging.getLogger(LOGGER_NAME)
+
+from qgis.PyQt.QtCore import (
+    QSettings,
+    QTranslator,
+    qVersion,
+    QCoreApplication
+)
+from qgis.PyQt.QtGui import (
+    QIcon,
+)
+from qgis.PyQt.QtWidgets import (
+    QAction,
+    QToolBar,
+)
 
 # Initialize Qt resources from file resources.py
 from . import resources
 # Import the code for the dialog
-from qgis.core import QgsApplication, QgsMessageLog, Qgis
+from qgis.core import (
+    QgsApplication,
+    QgsMessageLog,
+    Qgis,
+)
 
 from .rivm_plugin_config_manager_dialog import RIVM_PluginConfigManagerDialog
-from .networkaccessmanager import NetworkAccessManager, RequestsException
+from .networkaccessmanager import NetworkAccessManager
 import os.path
 import time
+
 
 
 class RIVM_PluginConfigManager:
@@ -98,6 +116,9 @@ class RIVM_PluginConfigManager:
 
         self.settings_url = 'http://repo.svc.cal-net.nl/repo/rivm/qgis/'
         self.nam = NetworkAccessManager()
+
+        log.debug('*')
+        log.debug('Starting RIVM Config Manager')
 
     # TODO: move this to a commons class/module
     def get_rivm_toolbar(self):
@@ -211,6 +232,7 @@ class RIVM_PluginConfigManager:
 
         # set dialog environment dropdown to show the last selected environment as current
         environment = QSettings().value(self.LAST_ENVIRONMENT_KEY)
+        log.debug(f'Environment from current user settings: "{environment}"')
         index = self.dlg.cb_environment.findData(environment)
         if index < 0:
             index = 0
@@ -225,6 +247,9 @@ class RIVM_PluginConfigManager:
             callback=self.run,
             parent=self.iface.mainWindow())
 
+        log.debug('Finished Init GUI RIVM Config Manager, refreshing settings')
+        self.set_environment(environment)
+
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -234,6 +259,7 @@ class RIVM_PluginConfigManager:
             self.toolbar.removeAction(action)
         # remove the toolbar
         del self.toolbar
+        log.debug('Unloaded RIVM Config Manager')
 
     def run(self):
         """Run method that performs all the real work"""
@@ -242,44 +268,44 @@ class RIVM_PluginConfigManager:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            # retrieve ini file
+            index = self.dlg.cb_environment.currentIndex()
+            environment = self.dlg.cb_environment.itemData(index)
+            self.set_environment(environment)
+
+    def set_environment(self, environment):
+        try:
+            icon_path = self.get_rivm_iconpath(environment)
+            self.action.setIcon(QIcon(icon_path))
+            # creating ini file url, adding ?t=timestap to fool caches...
+            url = self.settings_url + environment + '.rivm.ini' + '?t={}'.format(time.time())
+            log.debug(self.tr('Start retrieving ini file for environment "{}" from "{}"  ').format(environment, url))
             try:
-                index = self.dlg.cb_environment.currentIndex()
-                environment = self.dlg.cb_environment.itemData(index)
-                icon_path = self.get_rivm_iconpath(environment)
-                self.action.setIcon(QIcon(icon_path))
-                # creating ini file url, adding ?t=timestap to fool caches...
-                url = self.settings_url + environment + '.rivm.ini' + '?t={}'.format(time.time())
-                self.info(self.tr('Start retrieving ini file for environment "{}" from "{}"  ').format(environment, url))
-                try:
-                    (response, content) = self.nam.request(url)
-                except:
-                    # No connection, or failing to download, ignore and use old settings from QgsSettings
-                    msg = self.tr('Error retrieving fresh config from repo.\nReusing old values from Local Settings (Please check if you use the expected environment: dev/acc/prd).')
-                    self.info(msg)
-                    self.iface.messageBar().pushMessage(msg, level=Qgis.Warning)
-                    return
-                self.info(self.tr("Succesfully retrieved fresh config from repo, status: " + str(response.status)))
-                #self.info(self.tr("Response: " + str(response.content)))
-                # write ini file to settings.ini
-                filename = os.path.join(os.path.dirname(__file__), "settings.ini")
-                #self.info(filename)
-                with open(filename, 'wb') as f:  # using 'with open', then file is explicitly closed
-                    f.write(response.content)
-                self.info(self.tr("Written settings to file (to be able to write to QSettings) : " + filename))
-                # create a QSettings object from it
-                settings = QSettings(filename, QSettings.IniFormat)
-                # merge that object into qgis user settings
-                qgis_settings = QSettings()
-                qgis_settings.setValue(self.LAST_ENVIRONMENT_KEY, environment)
-                for key in settings.allKeys():
-                    self.info('Setting: {} -> {}'.format(key, settings.value(key)))
-                    qgis_settings.setValue(key, settings.value(key))
-                self.info(self.tr("Succesfully updated settings!!"))
+                (response, content) = self.nam.request(url)
+            except:
+                # No connection, or failing to download, ignore and use old settings from QgsSettings
+                msg = self.tr('Error retrieving fresh config from repo.\nReusing old values from Local Settings (Please check if you use the expected environment: dev/acc/prd).')
+                log.debug(msg)
+                self.iface.messageBar().pushMessage(msg, level=Qgis.Warning)
+                return
+            log.debug(self.tr("Succesfully retrieved fresh config from repo, status: " + str(response.status)))
+            #log.debug(self.tr("Response: " + str(response.content)))
+            # write ini file to settings.ini
+            filename = os.path.join(os.path.dirname(__file__), "settings.ini")
+            log.debug(f'Locally saving ini file to: {filename}')
+            with open(filename, 'wb') as f:  # using 'with open', then file is explicitly closed
+                f.write(response.content)
+            log.debug(self.tr(f'Written "{environment}" settings to file'))
+            # create a QSettings object from it
+            settings = QSettings(filename, QSettings.IniFormat)
+            # merge that object into qgis user settings
+            qgis_settings = QSettings()
+            qgis_settings.setValue(self.LAST_ENVIRONMENT_KEY, environment)
+            log.debug("Setting values (to local settings):")
+            for key in settings.allKeys():
+                log.debug(' - {} -> {}'.format(key, settings.value(key)))
+                qgis_settings.setValue(key, settings.value(key))
+            log.debug(self.tr("Succesfully updated settings!!"))
 
-            except Exception as e:
-                # "Handle" exception
-                self.info("Exception in retrieving rivm.ini, or moving it to QSettings: {}".format(e.message))
-
-    def info(self, msg=""):
-        QgsMessageLog.logMessage('{}'.format(msg), 'RIVM Config manager', Qgis.Info)
+        except Exception as e:
+            # "Handle" exception
+            log.debug(f'Exception in retrieving rivm.ini, or moving it to QSettings: {e.message}')
