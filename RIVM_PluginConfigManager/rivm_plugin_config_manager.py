@@ -22,6 +22,7 @@
 """
 from qgis.PyQt.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QMenu
 from qgis.PyQt.QtWidgets import QAction, QToolBar
 
 # Initialize Qt resources from file resources.py
@@ -90,7 +91,7 @@ class RIVM_PluginConfigManager:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&RIVM_PluginConfigManager')
+        self.menu = self.tr(u'&RIVM PluginConfigManager')
 
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.get_rivm_toolbar()
@@ -126,7 +127,7 @@ class RIVM_PluginConfigManager:
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('RIVM_PluginConfigManager', message)
+        return QCoreApplication.translate('RIVM PluginConfigManager', message)
 
     def add_action(
         self,
@@ -193,9 +194,7 @@ class RIVM_PluginConfigManager:
             self.toolbar.addAction(action)
 
         if add_to_menu:
-            self.iface.addPluginToWebMenu(
-                self.menu,
-                action)
+            self.iface.addPluginToMenu(self.menu, action)
 
         self.actions.append(action)
 
@@ -203,7 +202,6 @@ class RIVM_PluginConfigManager:
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-
         # Create the dialog (after translation) and keep reference
         self.dlg = RIVM_PluginConfigManagerDialog(self.iface.mainWindow())
         # create the environments dropdown
@@ -220,6 +218,7 @@ class RIVM_PluginConfigManager:
         self.dlg.cb_environment.setCurrentIndex(index)
 
         icon_path = self.get_rivm_iconpath(environment)
+
         self.action = self.add_action(
             icon_path,
             text=self.tr(u'Manage RIVM plugin configurations'),
@@ -252,10 +251,13 @@ class RIVM_PluginConfigManager:
                 # creating ini file url, adding ?t=timestap to fool caches...
                 url = self.settings_url + environment + '.rivm.ini' + '?t={}'.format(time.time())
                 self.info(self.tr('Start retrieving ini file for environment "{}" from "{}"  ').format(environment, url))
-                (response, content) = self.nam.request(url)
-                if response.status != 200:
-                    # TODO: what? Take offline ini file?
-                    self.info(self.tr("Error retrieving fresh config from repo, status: " + str(response.status)))
+                try:
+                    (response, content) = self.nam.request(url)
+                except:
+                    # No connection, or failing to download, ignore and use old settings from QgsSettings
+                    msg = self.tr('Error retrieving fresh config from repo.\nReusing old values from Local Settings (Please check if you use the expected environment: dev/acc/prd).')
+                    self.info(msg)
+                    self.iface.messageBar().pushMessage(msg, level=Qgis.Warning)
                     return
                 self.info(self.tr("Succesfully retrieved fresh config from repo, status: " + str(response.status)))
                 #self.info(self.tr("Response: " + str(response.content)))
