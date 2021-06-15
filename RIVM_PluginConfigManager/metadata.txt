@@ -4,7 +4,7 @@
 name=RIVM PluginConfigManager
 qgisMinimumVersion=3.4
 description=Plugin to manage the different dev/acc/prd configuration profiles of different RIVM plugins
-version=1.0.5
+version=1.0.6
 author=RIVM
 email=marnix.de.ridder@rivm.nl
 
@@ -18,6 +18,7 @@ repository=http://github.com
 
 # Uncomment the following line and add your changelog:
 changelog=
+    1.0.6
     1.0.5 Better handling connection issues, move to plugins menu (from web), Refresh settings on every startup
     1.0.4 New KNMI rain services url
     1.0.3 Make default page-size for WFS 25000
